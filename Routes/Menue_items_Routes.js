@@ -1,6 +1,6 @@
 const express = require("express");
 const Route = express.Router();
-const menue_Items = require("../Models/Hotel.js");
+const menue_Items = require("../models/Hotel.js");
 
 
 //api for enter items in menue

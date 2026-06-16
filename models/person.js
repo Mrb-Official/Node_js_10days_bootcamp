@@ -37,15 +37,15 @@ personSchema.pre("save", async function(next){
     const salt = await bcrypt.genSalt(10);
     const Hash_Password = await bcrypt.hash(person.password, salt);
 
-    person.password == Hash_Password;
-    return next();
+    person.password = Hash_Password;
+    next();
 
   }catch(err){
     return next(err);
   }
 });
 
-personSchema.models.comparePassword = async function(password){
+personSchema.methods.comparePassword = async function(password){
   try{
   const compared_password = await bcrypt.compare(password, this.password);
   return compared_password;

@@ -10,7 +10,7 @@ const person = require("./models/person");
         if(!user) return done(null, false, ({massage: "invalid username"}))
         
         //const isPass = user.comparePassword("password");
-        const isPass = await user.comparePassword("password");
+        const isPass = await user.comparePassword(password);
         if(!isPass){
             return done(null, null, ({massage: "invalid password"}));
         }else{

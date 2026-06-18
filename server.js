@@ -17,7 +17,7 @@ require('dotenv').config();
  
  //person routes 
 const PersonRoutes = require("./Routes/Person_routes");
-app.use("/person",authPassport, PersonRoutes);
+app.use("/person", PersonRoutes);
 
 //hotel menue route endpoint
 const Menue_Items = require("./Routes/Menue_items_Routes");

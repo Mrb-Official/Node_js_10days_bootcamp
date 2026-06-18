@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const auth = require("../auth");
+const bcrypt = require("bcrypt");
 
 const personSchema = new mongoose.Schema({
   name: {
@@ -29,7 +30,7 @@ const personSchema = new mongoose.Schema({
   }
 });
 
-personSchema.pre("save", async function(next){
+personSchema.pre("save", async function(){
   const person = this;
 
   if(!person.isModified("password"))  return next();
@@ -38,10 +39,10 @@ personSchema.pre("save", async function(next){
     const Hash_Password = await bcrypt.hash(person.password, salt);
 
     person.password = Hash_Password;
-    next();
+    
 
   }catch(err){
-    return next(err);
+    throw (err);
   }
 });
 

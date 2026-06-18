@@ -1,23 +1,24 @@
 const jwt = require("jsonwebtoken")
+require('dotenv').config();
 
-const jwtAuthMiddleware = (red, res, next) => {
-    const jwt_token = req.headers.Authorization.slice(" ")[1];
+const jwtAuthMiddleware = (req, res, next) => {
+    const jwt_token = req.headers.authorization.split(" ")[1];
+    console.log(jwt_token);
 
-    if(!jwt_token) res.status(401).json({err: "invalid credentials"});
+    if(!jwt_token) return res.status(401).json({err: "invalid credentials"});
 
         try{
-            const Authticated = jwt.verify(jwt_token, prosess.env.AUTH_KEY);
+            const Authticated = jwt.verify(jwt_token, process.env.AUTH_KEY);
             req.user = Authticated;
-            next();
+            return next();
         }catch(err){
             res.status(500).json(err);
             console.log(err);
-            next();
         }
 }
 
 const jwt_create = (userData) => {
-    const token = jwt.sign(user, prosess.env.AUTH_KEY);
+    const token = jwt.sign(userData, process.env.AUTH_KEY);
     return token;
 }
 

@@ -1,24 +1,99 @@
 const express = require('express')
 const Route = express.Router()
-const person = require('../models/person')
+const person = require('../models/person');
+const {jwtAuthMiddleware, jwt_create} = require("../jwt");
 
 
 
-Route.post("/", async (req, res) => {
+//import passpor midlleware with bcrypt
+const passport = require("../auth");
+Route.use(passport.initialize());
+const auth_passport = passport.authenticate("local", {session: false});
+
+
+//create a new user api
+Route.post("/signup", async (req, res) => {
     try{
       const data = req.body;
       const NewPerson = new person(data);
       
-      response = await NewPerson.save();
-      res.status(200).json(response);
+      const response = await NewPerson.save();
+      //extract userdata from response 
+      const preload = {
+        id: response.id,
+        username: response.username
+      }
+      //crate jwt token using user data
+      const token = jwt_create(preload);
+
+      //send token with responser to user
+      res.status(200).json({response, token});
+
     }catch(err){
       console.log("intrrnal error", err);
       res.status(500).json(err);
     }
   });
+
+  //login api and create jwt token on login
+  Route.post("/login", (req, res) => {
+    try{
+      //extract user data from form fields
+      const {username, password} = req.body;
+      //find usr by username
+      const user = person.findOne({username: username});
+
+      //check usr foud or not ans password match or not
+      if(!user || !(user.password==password)){
+        return res.status(401).json("invalid usernas or password");
+      }
+
+      //create a payload using founded user data
+      const payload = {
+        id: user.id,
+        username: user.username
+      }
+
+      //create a jwt token usig paylaod
+      const token = jwt_create(payload);
+
+      //return jwt token to user
+      res.status(200).json({token});
+
+    }catch(err){
+      console.log("intrrnal error", err);
+      res.status(500).json(err);
+    }
+  });
+
+
+
+  //view profile data using jwt token api
+  Route.get("/profile", jwtAuthMiddleware, async (req, res) => {
+    
+    try{
+      const userData = req.user;
+      console.log("user data : ", userData);
+      const user_id = userData.id;
+      
+      const user = await person.findById(user_id);
+
+      //userfound or not 
+      if(!user) return res.status(401).json("user not found");
+      //show user data when fetch
+      //console.log(user);
+      res.status(200).json({user});
+      
+
+    }catch(err){
+      console.log(err);
+      res.status(500).json(err);
+    }
+
+  });
   
   //get methid to get all usrr data
-  Route.get("/", async (req, res) => {
+  Route.get("/", jwtAuthMiddleware, async (req, res) => {
     try{
     const users = await person.find();
     res.json(users);
@@ -34,7 +109,7 @@ Route.post("/", async (req, res) => {
         
         const response = await person.find({work: work_type});
         res.status(200).json(response);
-      }catch(err){
+      }catch(err){    
         res.status(500).json(err);
         console.log(err);
       }
